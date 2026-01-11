@@ -1,12 +1,10 @@
-import { CurrentWeather } from '@/widgets/CurrentWeather/ui/CurrentWeather';
+// src/App.tsx
+import { HomePage } from "@/pages/home/ui/HomePage";
 
-function App() {
+export function App() {
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <CurrentWeather />
+    <div className="min-h-screen bg-blue-400">
+      <HomePage />
     </div>
   );
 }
-
-export default App;
-
