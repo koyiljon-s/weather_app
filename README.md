@@ -10,7 +10,7 @@
 
 2. Detects User Location 
 3. Search Feature
-4. Favoriies
+4. Favorities
    - Can add/remove
    - Max 6 locations
 

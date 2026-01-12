@@ -1,19 +1,22 @@
-// src/pages/home/ui/HomePage.tsx
-import { LocationSearch } from "@/widgets/LocationSearch/ui/LocationSearch";
 import { CurrentWeather } from "@/widgets/CurrentWeather/ui/CurrentWeather";
+import { HourlyForecast } from "@/widgets/HourlyForecast/ui/HourlyForecast";
+import { LocationSearch } from "@/widgets/LocationSearch/ui/LocationSearch";
+import { FavoritesTable } from "@/widgets/FavoritesTable/ui/FavoritesTable";
+import MapView from '@/widgets/MapView/ui/MapView';
+
 
 export function HomePage() {
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-80 bg-blue-400 p-4">
-        <LocationSearch />
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 p-6 bg-gray-100">
-        <CurrentWeather />
-      </main>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto p-4 max-w-7xl">
+        <div className="space-y-6">
+          <CurrentWeather />
+          <HourlyForecast />
+          <LocationSearch />
+          <FavoritesTable />
+          <MapView height="400px"  />
+        </div>
+      </div>
     </div>
   );
 }
