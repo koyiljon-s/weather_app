@@ -3,6 +3,8 @@
 
 A modern weather application built with React and TypeScript that provides current weather information, hourly forecasts, location search, and favorites management. Features automatic location detection and an interactive map view.
 
+**The project is deployed using Vercel:**2 https://weather-app-theta-cyan-75.vercel.app/
+
 ## Getting Started
 
 ### Installation
