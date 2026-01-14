@@ -10,11 +10,11 @@ export function FavoritesTable() {
 
   if (favorites.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 text-center">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3">
+      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 text-center">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
           Favorite Locations
         </h2>
-        <p className="text-gray-500">
+        <p className="text-sm sm:text-base text-gray-500">
           No favorite locations added yet.<br />
           Search and add your preferred places!
         </p>
@@ -24,14 +24,28 @@ export function FavoritesTable() {
 
   return (
     <div className="bg-white rounded-xl border border-gray-400 overflow-hidden">
-      <div className="px-5 py-4 border-b bg-blue-200">
-        <h2 className="text-lg font-semibold text-gray-800">
+      {/* Header */}
+      <div className="px-4 sm:px-5 py-3 sm:py-4 border-b bg-blue-200">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800">
           Favorite Locations ({favorites.length}/6)
         </h2>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-120">
+      {/* Mobile: Card Layout */}
+      <div className="block lg:hidden divide-y divide-gray-100">
+        {favorites.map((favorite) => (
+          <MobileFavoriteCard
+            key={favorite.id}
+            favorite={favorite}
+            onRemove={() => removeFavorite(favorite.id)}
+            onSelect={() => setSelectedLocation(favorite)}
+          />
+        ))}
+      </div>
+
+      {/* Desktop: Table Layout */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="w-full">
           <thead className="bg-green-200">
             <tr>
               <th className="text-left px-5 py-3 text-sm font-medium text-gray-600">
@@ -43,7 +57,7 @@ export function FavoritesTable() {
               <th className="text-center px-4 py-3 text-sm font-medium text-gray-600">
                 Weather
               </th>
-              <th className="w-24"></th> {/* Actions */}
+              <th className="w-24"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -68,11 +82,12 @@ interface FavoriteRowProps {
   onSelect: () => void;
 }
 
+// Desktop Table Row
 function FavoriteRow({ favorite, onRemove, onSelect }: FavoriteRowProps) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["weather", favorite.lat, favorite.lon],
     queryFn: () => fetchWeather(favorite.lat, favorite.lon),
-    refetchInterval: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 5 * 60 * 1000,
   });
 
   if (isLoading) {
@@ -131,11 +146,71 @@ function FavoriteRow({ favorite, onRemove, onSelect }: FavoriteRowProps) {
             e.stopPropagation();
             onRemove();
           }}
-          className="text-grey-300 hover:text-grey-800 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
+          className="text-gray-200 hover:text-gray-300 text-sm font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors"
         >
           Remove
         </button>
       </td>
     </tr>
+  );
+}
+
+// Mobile Card Layout
+function MobileFavoriteCard({ favorite, onRemove, onSelect }: FavoriteRowProps) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["weather", favorite.lat, favorite.lon],
+    queryFn: () => fetchWeather(favorite.lat, favorite.lon),
+    refetchInterval: 5 * 60 * 1000,
+  });
+
+  return (
+    <div
+      onClick={onSelect}
+      className="p-4 hover:bg-blue-50/40 cursor-pointer transition-colors active:bg-blue-100/40"
+    >
+      {/* Header with location name and remove button */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <h3 className="font-medium text-gray-900 text-sm flex-1 wrap-break-words">
+          {favorite.name}
+        </h3>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="text-gray-200 hover:text-gray-300 text-xs font-medium px-2 py-1 rounded hover:bg-red-50 transition-colors shrink-0"
+        >
+          Remove
+        </button>
+      </div>
+
+      {/* Weather Info */}
+      {isLoading ? (
+        <p className="text-sm text-gray-500">Loading...</p>
+      ) : error || !data ? (
+        <p className="text-sm text-gray-500">Failed to load weather</p>
+      ) : (
+        <div className="flex items-center justify-between gap-3">
+          {/* Left: Weather icon and description */}
+          <div className="flex items-center gap-2">
+            {data.weather[0]?.icon && (
+              <img
+                src={`https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`}
+                alt={data.weather[0]?.description}
+                className="w-10 h-10"
+              />
+            )}
+            <span className="text-xs text-gray-600 capitalize">
+              {data.weather[0]?.description || "—"}
+            </span>
+          </div>
+
+          {/* Right: Temperature */}
+          <span className="text-2xl font-bold text-gray-800">
+            {Math.round(data.main.temp)}°
+          </span>
+        </div>
+      )}
+    </div>
   );
 }

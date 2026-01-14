@@ -61,7 +61,6 @@ function MapViewComponent({ height = '500px' }: { height?: string }) {
         <NavigationControl position="top-right" />
       </Map>
 
-      {/* Cloud label */}
       <div className="pointer-events-none absolute bottom-4 left-4 rounded-full bg-white/80 px-4 py-2 text-sm font-semibold shadow backdrop-blur">
         ☁️ Cloud Cover
       </div>
