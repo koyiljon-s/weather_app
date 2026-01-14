@@ -29,16 +29,16 @@ export function CurrentWeather() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-100 rounded-xl p-6 text-center">
-        <p className="text-gray-600">Loading current weather...</p>
+      <div className="bg-gray-100 rounded-xl p-4 sm:p-6 text-center">
+        <p className="text-sm sm:text-base text-gray-600">Loading current weather...</p>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="bg-gray-100 rounded-xl p-6 text-center">
-        <p className="text-gray-600">Failed to load weather</p>
+      <div className="bg-gray-100 rounded-xl p-4 sm:p-6 text-center">
+        <p className="text-sm sm:text-base text-gray-600">Failed to load weather</p>
       </div>
     );
   }
@@ -51,42 +51,63 @@ export function CurrentWeather() {
   const description = data.weather[0]?.description || "—";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-400 p-6">
-  
+    <div className="bg-white rounded-xl shadow-sm border border-gray-400 p-4 sm:p-6">
+      {/* City name and description */}
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">{cityName}</h2>
-        <p className="text-gray-600 capitalize">{description}</p>
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
+          {cityName}
+        </h2>
+        <p className="text-sm sm:text-base text-gray-600 capitalize">{description}</p>
       </div>
 
-      <div className="flex items-center justify-between gap-6">
-      
-        <div className="flex items-center gap-4">
+      {/* Main content - responsive layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
+        {/* Left side - Weather icon and temperature */}
+        <div className="flex items-center gap-3 sm:gap-4">
           <img
             src={`https://openweathermap.org/img/wn/${data.weather[0]?.icon}@2x.png`}
             alt={description}
-            className="w-16 h-16"
+            className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20"
           />
           <div>
-            <div className="text-5xl font-bold text-gray-900">
+            <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900">
               {currentTemp}°
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-xs sm:text-sm text-gray-600 mt-1">
               Feels like {feelsLike}°
             </div>
           </div>
         </div>
 
-        
-        <div className="text-right">
-          <div className="mb-3">
-            <span className="text-xs text-gray-500 ml-2">Today's Highest Temp.</span>
-            <span className="text-red-600 font-medium">↑</span>
-            <span className="text-gray-800 font-medium ml-1">{maxTemp}°</span>
+        {/* Right side - High/Low temperatures */}
+        <div className="flex sm:flex-col gap-4 sm:gap-0 sm:text-right">
+         
+          <div className="flex-1 sm:mb-3">
+            <div className="flex flex-col sm:flex-row sm:justify-end items-start sm:items-center gap-1">
+              <span className="text-xs text-gray-500 sm:order-1">
+                Today's Highest Temp.
+              </span>
+              <div className="sm:order-2">
+                <span className="text-red-600 font-medium text-base sm:text-lg">↑</span>
+                <span className="text-gray-800 font-medium ml-1 text-lg sm:text-xl">
+                  {maxTemp}°
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="text-xs text-gray-500 ml-2">Today's Lowest Temp.</span>
-            <span className="text-blue-600 font-medium">↓</span>
-            <span className="text-gray-800 font-medium ml-1">{minTemp}°</span>
+
+          <div className="flex-1">
+            <div className="flex flex-col sm:flex-row sm:justify-end items-start sm:items-center gap-1">
+              <span className="text-xs text-gray-500 sm:order-1">
+                Today's Lowest Temp.
+              </span>
+              <div className="sm:order-2">
+                <span className="text-blue-600 font-medium text-base sm:text-lg">↓</span>
+                <span className="text-gray-800 font-medium ml-1 text-lg sm:text-xl">
+                  {minTemp}°
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

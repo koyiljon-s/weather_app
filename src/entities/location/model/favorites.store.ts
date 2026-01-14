@@ -1,8 +1,7 @@
-// src/entities/location/model/favorites.store.ts
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-export interface FavoriteLocation {
+interface FavoriteLocation {
   id: string;
   name: string;
   lat: number;
@@ -11,50 +10,51 @@ export interface FavoriteLocation {
 
 interface FavoritesState {
   favorites: FavoriteLocation[];
-  addFavorite: (location: Omit<FavoriteLocation, 'id'>) => boolean; // returns success
+  addFavorite: (location: Omit<FavoriteLocation, 'id'>) => boolean;
   removeFavorite: (id: string) => void;
-  isFavorite: (lat: number, lon: number) => boolean;
+  isFavorite: (name: string) => boolean;
 }
 
 export const useFavoritesStore = create<FavoritesState>()(
   persist(
     (set, get) => ({
       favorites: [],
-
+      
       addFavorite: (location) => {
-        const current = get().favorites;
-
-        if (current.length >= 6) {
-          return false; // cannot add more
+        const { favorites } = get();
+        
+      
+        if (favorites.length >= 6) {
+          return false;
         }
+        
 
-        // Simple unique id
-        const id = `${location.name}-${Math.round(location.lat * 10000)}-${Math.round(location.lon * 10000)}`;
-
-        // Already exists check
-        if (current.some(f => f.id === id)) {
+        if (favorites.some((fav) => fav.name === location.name)) {
+          alert("Location already in favorites");
           return false;
         }
 
-        set({
-          favorites: [...current, { ...location, id }]
-        });
+        const id = `${location.name}-${Date.now()}`;
 
+        set({ 
+          favorites: [...favorites, { ...location, id }] 
+        });
+        
         return true;
       },
-
-      removeFavorite: (id) =>
+      
+      removeFavorite: (id) => {
         set((state) => ({
-          favorites: state.favorites.filter((f) => f.id !== id)
-        })),
-
-      isFavorite: (lat, lon) =>
-        get().favorites.some(
-          (f) => Math.abs(f.lat - lat) < 0.0001 && Math.abs(f.lon - lon) < 0.0001
-        )
+          favorites: state.favorites.filter((fav) => fav.id !== id),
+        }));
+      },
+      
+      isFavorite: (name) => {
+        return get().favorites.some((fav) => fav.name === name);
+      },
     }),
     {
-      name: 'weather-favorites-v1'
+      name: "weather-favorites",
     }
   )
 );

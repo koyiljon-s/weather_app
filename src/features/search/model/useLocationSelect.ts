@@ -20,7 +20,7 @@ export function useLocationSelect() {
     } catch (error) {
       console.error("Failed to geocode location:", error);
       
-      // Try with simplified name
+    
       try {
         const parts = locationName.split(' ');
         const simpleName = parts.length > 1 ? parts[1] : parts[0];

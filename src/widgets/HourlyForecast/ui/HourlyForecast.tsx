@@ -59,7 +59,11 @@ export function HourlyForecast() {
   const forecastData = data.list.slice(0, 8);
 
   return (
+    
     <div className="bg-gray-700 text-white p-5 rounded-xl shadow-md">
+      <h2 className="text-base sm:text-lg font-semibold mb-4">
+        Hourly Forecast
+      </h2>
       <div
         ref={scrollRef}
         className="flex gap-5 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800 snap-x snap-mandatory"
