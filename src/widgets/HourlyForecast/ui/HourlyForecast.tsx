@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, Typography, Box, Skeleton, Stack } from "@mui/material";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 import { fetchForecast } from "@/entities/weather/api/fetchForecast";
 import { useLocationStore } from "@/entities/location/model/location.store";
@@ -41,66 +43,112 @@ export function HourlyForecast() {
 
   if (isLoading) {
     return (
-      <div className="p-4 bg-gray-100 rounded">
-        <p className="text-gray-600">Loading forecast...</p>
-      </div>
+      <Card>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <AccessTimeIcon color="primary" />
+            <Typography variant="h6" fontWeight={600}>
+              Hourly Forecast
+            </Typography>
+          </Box>
+          <Stack direction="row" spacing={2} overflow="hidden">
+            {[...Array(5)].map((_, i) => (
+              <Box key={i} sx={{ minWidth: 70, textAlign: 'center' }}>
+                <Skeleton variant="text" width={40} />
+                <Skeleton variant="rectangular" width={50} height={50} sx={{ borderRadius: 1, my: 1 }} />
+                <Skeleton variant="text" width={30} />
+              </Box>
+            ))}
+          </Stack>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="p-4 bg-gray-100 rounded">
-        <p className="text-gray-600">Failed to load forecast</p>
-      </div>
+      <Card>
+        <CardContent sx={{ textAlign: 'center', py: 4 }}>
+          <Typography color="error">Failed to load forecast</Typography>
+        </CardContent>
+      </Card>
     );
   }
 
-  // Next ~24 hours (8 × 3-hour intervals)
   const forecastData = data.list.slice(0, 8);
 
   return (
-    
-    <div className="bg-gray-700 text-white p-5 rounded-xl shadow-md">
-      <h2 className="text-base sm:text-lg font-semibold mb-4">
-        Hourly Forecast
-      </h2>
-      <div
-        ref={scrollRef}
-        className="flex gap-5 overflow-x-auto pb-3 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-800 snap-x snap-mandatory"
-      >
-        {forecastData.map((interval) => {
-          const time = new Date(interval.dt * 1000);
-          const hours = time.getHours();
+    <Card elevation={2}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <AccessTimeIcon color="primary" />
+          <Typography variant="h6" fontWeight={600}>
+            Hourly Forecast
+          </Typography>
+        </Box>
+        <Box
+          ref={scrollRef}
+          sx={{
+            display: 'flex',
+            gap: 2.5,
+            overflowX: 'auto',
+            pb: 1,
+            '&::-webkit-scrollbar': {
+              height: 6,
+            },
+            '&::-webkit-scrollbar-thumb': {
+              bgcolor: 'grey.400',
+              borderRadius: 3,
+            },
+          }}
+        >
+          {forecastData.map((interval) => {
+            const time = new Date(interval.dt * 1000);
+            const hours = time.getHours();
 
-          const timeLabel =
-            hours === 0
-              ? "12 AM"
-              : hours === 12
-              ? "12 PM"
-              : hours < 12
-              ? `${hours} AM`
-              : `${hours - 12} PM`;
+            const timeLabel =
+              hours === 0
+                ? "12 AM"
+                : hours === 12
+                ? "12 PM"
+                : hours < 12
+                ? `${hours} AM`
+                : `${hours - 12} PM`;
 
-          return (
-            <div
-              key={interval.dt}
-              className="flex flex-col items-center gap-1.5 min-w-18 snap-start"
-            >
-              <p className="text-xs font-medium opacity-90">{timeLabel}</p>
+            return (
+              <Box
+                key={interval.dt}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  minWidth: 70,
+                  p: 1,
+                  borderRadius: 2,
+                  '&:hover': {
+                    bgcolor: 'action.hover',
+                  },
+                }}
+              >
+                <Typography variant="caption" fontWeight={500} color="text.secondary">
+                  {timeLabel}
+                </Typography>
 
-              <img
-                src={`https://openweathermap.org/img/wn/${interval.weather[0].icon}@2x.png`}
-                alt={interval.weather[0].description}
-                className="w-11 h-11 -my-1"
-              />
+                <img
+                  src={`https://openweathermap.org/img/wn/${interval.weather[0].icon}@2x.png`}
+                  alt={interval.weather[0].description}
+                  style={{ width: 50, height: 50 }}
+                />
 
-              <p className="text-lg font-bold tracking-tight">
-                {Math.round(interval.main.temp)}°
-              </p>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+                <Typography variant="body1" fontWeight={700}>
+                  {Math.round(interval.main.temp)}°
+                </Typography>
+              </Box>
+            );
+          })}
+        </Box>
+      </CardContent>
+    </Card>
   );
 }

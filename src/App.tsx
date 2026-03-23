@@ -1,12 +1,12 @@
-// src/App.tsx
-import { HomePage } from "@/pages/home/ui/HomePage";
+import { Box, Container } from '@mui/material';
+import { HomePage } from '@/pages/home/ui/HomePage';
 
 export function App() {
   return (
-    <div className="min-h-screen bg-gray-200 flex items-center justify-center w-full">
-      <div className="w-full max-w-7xl mx-auto">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 3 }}>
+      <Container maxWidth="xl">
         <HomePage />
-      </div>
-    </div>
+      </Container>
+    </Box>
   );
 }

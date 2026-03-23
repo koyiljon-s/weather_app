@@ -1,6 +1,20 @@
-// src/widgets/LocationSearch/ui/LocationSearch.tsx
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  Card, 
+  CardContent, 
+  Typography, 
+  Box, 
+  Autocomplete, 
+  TextField, 
+  Button, 
+  CircularProgress,
+  Paper,
+  Snackbar,
+  Alert
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useFavoritesStore } from '@/entities/location/model/favorites.store';
 import { fetchWeather } from '@/entities/weather/api/fetchWeather';
 import { useLocationSearch } from '@/features/search/model/useLocationSearch';
@@ -16,6 +30,12 @@ export function LocationSearch() {
     lon: number;
   } | null>(null);
 
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
   const favorites = useFavoritesStore((s) => s.favorites);
   const addFavorite = useFavoritesStore((s) => s.addFavorite);
 
@@ -23,10 +43,12 @@ export function LocationSearch() {
     queryKey: ['weather-preview', selectedPreview?.lat, selectedPreview?.lon],
     queryFn: () => fetchWeather(selectedPreview!.lat, selectedPreview!.lon),
     enabled: !!selectedPreview?.lat && !!selectedPreview?.lon,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
-  const handleSelect = async (item: KoreaLocation) => {
+  const handleSelect = async (_: unknown, item: string | KoreaLocation | null) => {
+    if (!item || typeof item === 'string') return;
+    
     let geo = await geocodeLocation(item.fullName);
 
     if (!geo && item.district) {
@@ -38,7 +60,7 @@ export function LocationSearch() {
     }
 
     if (!geo) {
-      alert('Unable to find coordinates for the selected location.');
+      setSnackbar({ open: true, message: 'Unable to find coordinates for the selected location.', severity: 'error' });
       return;
     }
 
@@ -58,95 +80,116 @@ export function LocationSearch() {
       name: selectedPreview.name,
       lat: selectedPreview.lat,
       lon: selectedPreview.lon,
-      // Don't pass id - it will be generated automatically
     });
   
     if (success) {
       setSelectedPreview(null);
-      alert('Location added to favorites!'); // Optional success message
+      setSnackbar({ open: true, message: 'Location added to favorites!', severity: 'success' });
     } else {
-      // This alert will only show if at max capacity, not for duplicates
-      // (duplicates show their own alert in the store)
+      setSnackbar({ open: true, message: 'This location is already in favorites or max limit reached.', severity: 'error' });
     }
   };
 
   return (
-    <div className="w-full">
-      {/* Search Label */}
-      <p className="text-xs sm:text-sm font-bold text-gray-800 mb-1 sm:mb-2">
-        Search Location
-      </p>
+    <Card elevation={2}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <SearchIcon color="primary" />
+          <Typography variant="h6" fontWeight={600}>
+            Search Location
+          </Typography>
+        </Box>
 
-      {/* Search Input */}
-      <input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="지역 검색 (예: 종로구, 청운동)"
-        className="w-full p-2.5 sm:p-3 text-sm sm:text-base border-2 border-blue-500 rounded-lg focus:border-blue-400 focus:outline-none bg-white text-black"
-      />
-
-      {/* Search Results */}
-      {results.length > 0 && (
-        <ul className="mt-2 border rounded-lg bg-blue-400 max-h-48 sm:max-h-64 overflow-auto shadow-lg divide-y">
-          {results.map((item) => (
-            <li
-              key={item.key}
-              onClick={() => handleSelect(item)}
-              className="p-2.5 sm:p-3 hover:bg-blue-200 cursor-pointer text-sm sm:text-base active:bg-blue-300 transition-colors"
-            >
-              {item.fullName || '이름 없음'}
+        <Autocomplete
+          freeSolo
+          options={results}
+          getOptionLabel={(option) => typeof option === 'string' ? option : option.fullName || ''}
+          onChange={handleSelect}
+          onInputChange={(_, value) => setQuery(value)}
+          inputValue={query}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="지역 검색 (예: 종로구, 청운동)"
+              size="small"
+              fullWidth
+            />
+          )}
+          renderOption={(props, option) => (
+            <li {...props}>
+              <Typography variant="body2">{option.fullName}</Typography>
             </li>
-          ))}
-        </ul>
-      )}
+          )}
+          PaperComponent={({ children, ...props }) => (
+            <Paper {...props} elevation={3}>{children}</Paper>
+          )}
+        />
 
-      {/* Preview Card after selection */}
-      {selectedPreview && (
-        <div className="mt-4 sm:mt-5 p-3 sm:p-4 bg-gray-700 rounded-lg border shadow-md">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="w-full sm:w-auto">
-              <h3 className="font-semibold text-base sm:text-lg text-white wrap-break-words">
-                {selectedPreview.name}
-              </h3>
+        {selectedPreview && (
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              mt: 2, 
+              p: 2, 
+              bgcolor: 'primary.main', 
+              color: 'primary.contrastText',
+              borderRadius: 2
+            }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'stretch', sm: 'center'}, justifyContent: 'space-between', gap: 2 }}>
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {selectedPreview.name}
+                </Typography>
 
-              {previewLoading ? (
-                <div className="mt-2 text-xs sm:text-sm text-gray-400">
-                  Loading weather information...
-                </div>
-              ) : previewData ? (
-                <div className="mt-1 sm:mt-2 flex items-baseline gap-2">
-                  <span className="text-2xl sm:text-3xl font-bold text-white">
-                    {Math.round(previewData.main.temp)}°
-                  </span>
-                  <span className="text-xs sm:text-sm text-gray-300 capitalize">
-                    {previewData.weather?.[0]?.description || '—'}
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-2 text-xs sm:text-sm text-red-400">
-                  Weather information cannot be retrieved
-                </div>
-              )}
-            </div>
+                {previewLoading ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                    <CircularProgress size={16} sx={{ color: 'inherit' }} />
+                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                      Loading weather...
+                    </Typography>
+                  </Box>
+                ) : previewData ? (
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mt: 0.5 }}>
+                    <Typography variant="h4" fontWeight={700}>
+                      {Math.round(previewData.main.temp)}°
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8, textTransform: 'capitalize' }}>
+                      {previewData.weather?.[0]?.description || ''}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="error.light" sx={{ mt: 0.5 }}>
+                    Failed to load weather
+                  </Typography>
+                )}
+              </Box>
 
-            <button
-              onClick={handleAdd}
-              disabled={favorites.length >= 6}
-              className={`
-                w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap
-                transition-colors duration-200
-                ${
-                  favorites.length >= 6
-                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800'
-                }
-              `}
-            >
-              {favorites.length >= 6 ? 'Max 6 Favorites' : 'Add to Favorites'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+              <Button
+                onClick={handleAdd}
+                disabled={favorites.length >= 6}
+                variant="contained"
+                color="secondary"
+                startIcon={<FavoriteBorderIcon />}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                {favorites.length >= 6 ? 'Max 6 Favorites' : 'Add to Favorites'}
+              </Button>
+            </Box>
+          </Paper>
+        )}
+
+        <Snackbar 
+          open={snackbar.open} 
+          autoHideDuration={3000} 
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity={snackbar.severity} variant="filled">
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </CardContent>
+    </Card>
   );
 }

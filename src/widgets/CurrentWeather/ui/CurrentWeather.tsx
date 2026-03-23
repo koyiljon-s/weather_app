@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, Typography, Box, Skeleton, Chip } from "@mui/material";
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import AirIcon from '@mui/icons-material/Air';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 import { fetchWeather } from "@/entities/weather/api/fetchWeather";
 import { useLocationStore } from "@/entities/location/model/location.store";
@@ -29,17 +34,26 @@ export function CurrentWeather() {
 
   if (isLoading) {
     return (
-      <div className="bg-gray-100 rounded-xl p-4 sm:p-6 text-center">
-        <p className="text-sm sm:text-base text-gray-600">Loading current weather...</p>
-      </div>
+      <Card>
+        <CardContent>
+          <Skeleton variant="text" width={200} height={40} />
+          <Skeleton variant="text" width={150} height={24} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+            <Skeleton variant="rectangular" width={80} height={80} sx={{ borderRadius: 2 }} />
+            <Skeleton variant="text" width={100} height={60} />
+          </Box>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="bg-gray-100 rounded-xl p-4 sm:p-6 text-center">
-        <p className="text-sm sm:text-base text-gray-600">Failed to load weather</p>
-      </div>
+      <Card>
+        <CardContent sx={{ textAlign: 'center', py: 4 }}>
+          <Typography color="error">Failed to load weather</Typography>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -51,66 +65,59 @@ export function CurrentWeather() {
   const description = data.weather[0]?.description || "—";
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-400 p-4 sm:p-6">
-      {/* City name and description */}
-      <div className="mb-4">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">
-          {cityName}
-        </h2>
-        <p className="text-sm sm:text-base text-gray-600 capitalize">{description}</p>
-      </div>
+    <Card elevation={2}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+          <LocationOnIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+          <Typography variant="h5" fontWeight={600}>
+            {cityName}
+          </Typography>
+        </Box>
+        
+        <Chip label={description} size="small" variant="outlined" sx={{ textTransform: 'capitalize', mb: 2 }} />
 
-      {/* Main content - responsive layout */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-6">
-        {/* Left side - Weather icon and temperature */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <img
-            src={`https://openweathermap.org/img/wn/${data.weather[0]?.icon}@2x.png`}
-            alt={description}
-            className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20"
-          />
-          <div>
-            <div className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900">
-              {currentTemp}°
-            </div>
-            <div className="text-xs sm:text-sm text-gray-600 mt-1">
-              Feels like {feelsLike}°
-            </div>
-          </div>
-        </div>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <img
+              src={`https://openweathermap.org/img/wn/${data.weather[0]?.icon}@2x.png`}
+              alt={description}
+              style={{ width: 80, height: 80 }}
+            />
+            <Box>
+              <Typography variant="h2" fontWeight={700}>
+                {currentTemp}°
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
+                <AirIcon sx={{ fontSize: 16 }} />
+                <Typography variant="body2">
+                  Feels like {feelsLike}°
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
 
-        {/* Right side - High/Low temperatures */}
-        <div className="flex sm:flex-col gap-4 sm:gap-0 sm:text-right">
-         
-          <div className="flex-1 sm:mb-3">
-            <div className="flex flex-col sm:flex-row sm:justify-end items-start sm:items-center gap-1">
-              <span className="text-xs text-gray-500 sm:order-1">
-                Today's Highest Temp.
-              </span>
-              <div className="sm:order-2">
-                <span className="text-red-600 font-medium text-base sm:text-lg">↑</span>
-                <span className="text-gray-800 font-medium ml-1 text-lg sm:text-xl">
+          <Box sx={{ display: 'flex', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <ArrowUpwardIcon sx={{ color: 'error.main', fontSize: 20 }} />
+              <Box>
+                <Typography variant="caption" color="text.secondary">High</Typography>
+                <Typography variant="body1" fontWeight={600} color="error.main">
                   {maxTemp}°
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row sm:justify-end items-start sm:items-center gap-1">
-              <span className="text-xs text-gray-500 sm:order-1">
-                Today's Lowest Temp.
-              </span>
-              <div className="sm:order-2">
-                <span className="text-blue-600 font-medium text-base sm:text-lg">↓</span>
-                <span className="text-gray-800 font-medium ml-1 text-lg sm:text-xl">
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <ArrowDownwardIcon sx={{ color: 'info.main', fontSize: 20 }} />
+              <Box>
+                <Typography variant="caption" color="text.secondary">Low</Typography>
+                <Typography variant="body1" fontWeight={600} color="info.main">
                   {minTemp}°
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
